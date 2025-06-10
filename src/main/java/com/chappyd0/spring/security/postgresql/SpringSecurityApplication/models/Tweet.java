@@ -7,11 +7,7 @@
  */
 package com.chappyd0.spring.security.postgresql.SpringSecurityApplication.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -25,6 +21,9 @@ public class Tweet {
     @NotBlank
     @Size(max = 140)
     private String tweet;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "posted_by", referencedColumnName = "id")
+    private User postedBy;
 
     public Tweet() {
     }
@@ -45,6 +44,14 @@ public class Tweet {
     public void setTweet(String tweet) {
         this.tweet = tweet;
     }
+    public User getPostedBy() {
+        return postedBy;
+    }
+
+    public void setPostedBy(User postedBy) {
+        this.postedBy = postedBy;
+    }
+
 
 }
 
