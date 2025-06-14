@@ -10,19 +10,61 @@ package com.chappyd0.spring.security.postgresql.SpringSecurityApplication.models
 import jakarta.persistence.*;
 
 @Entity
-@Table( name = "tweet_reactions")
+@Table( name = "tweet_reactions",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"user_id", "tweet_id"}
+                ),
+
+        }
+)
+
 public class TweetReaction {
 
-    @EmbeddedId
-    LikeKey id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    public LikeKey getId() {
+    @Column(name = "reaction_id")
+    Long reactionId;
+
+    public Long getReactionId() {
+        return reactionId;
+    }
+
+    public void setReactionId(Long reactionId) {
+        this.reactionId = reactionId;
+    }
+
+    @Column(name = "user_id")
+    Long userId;
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    @Column(name = "tweet_id")
+    Long tweetId;
+
+    public Long getTweetId() {
+        return tweetId;
+    }
+
+    public void setTweetId(Long tweetId) {
+        this.tweetId = tweetId;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(LikeKey id) {
+    public void setId(Long id) {
         this.id = id;
     }
+
 
     @ManyToOne
     @MapsId("userId")
@@ -34,8 +76,10 @@ public class TweetReaction {
     }
 
     public void setUser(User user) {
+        this.userId = user.getId();
         this.user = user;
     }
+
     @ManyToOne
     @MapsId("tweetId")
     @JoinColumn(name = "tweet_id")
@@ -46,6 +90,7 @@ public class TweetReaction {
     }
 
     public void setTweet(Tweet tweet) {
+        this.tweetId = tweet.getId();
         this.tweet = tweet;
     }
 
@@ -59,9 +104,8 @@ public class TweetReaction {
     }
 
     public void setReaction(Reaction reaction) {
+        this.reactionId = reaction.getId();
         this.reaction = reaction;
     }
 
 }
-
-
