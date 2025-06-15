@@ -102,7 +102,7 @@ public class TweetReactionController {
 
     private User getValidUser(String userId) {
         Optional<User> userOpt = userRepository.findByUsername(userId);
-        if (!userOpt.isPresent()) {
+        if (userOpt.isEmpty()) {
             throw new RuntimeException("User not found");
         }
         return userOpt.get();
@@ -110,7 +110,7 @@ public class TweetReactionController {
 
     private Tweet getValidTweet(Long tweetId) {
         Optional<Tweet> tweetOpt = tweetRepository.findById(tweetId);
-        if (!tweetOpt.isPresent()) {
+        if (tweetOpt.isEmpty()) {
             throw new RuntimeException("Tweet not found");
         }
         return tweetOpt.get();
@@ -118,7 +118,7 @@ public class TweetReactionController {
 
     private Reaction getValidReaction(Long reactionId) {
         Optional<Reaction> reactionOpt = reactionRepository.findById(reactionId);
-        if (!reactionOpt.isPresent()) {
+        if (reactionOpt.isEmpty()) {
             throw new RuntimeException("Reaction not found");
         }
         return reactionOpt.get();

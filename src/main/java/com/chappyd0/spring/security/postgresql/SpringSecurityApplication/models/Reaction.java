@@ -7,9 +7,13 @@
  */
 package com.chappyd0.spring.security.postgresql.SpringSecurityApplication.models;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "reactions")
+@Getter
+@Setter
 public class Reaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,22 +25,5 @@ public class Reaction {
 
     public Reaction() {
     }
-    public Reaction(EReaction description) {
-        this.description = description;
-    }
-    public EReaction getDescription() {
-        return description;
-    }
 
-    public void setDescription(EReaction description) {
-        this.description = description;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 }

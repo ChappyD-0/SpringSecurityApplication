@@ -72,6 +72,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
                                 .requestMatchers("/api/test/**").permitAll()
                                 .requestMatchers("/api/tweets/**").permitAll()
                                 .requestMatchers("/api/reactions/**").permitAll()
+                                .requestMatchers("/api/comments/**").permitAll()
                                 .anyRequest().authenticated()
                 );
 

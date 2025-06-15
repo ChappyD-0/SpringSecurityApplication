@@ -8,7 +8,10 @@
 package com.chappyd0.spring.security.postgresql.SpringSecurityApplication.models;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
 @Entity
 @Table( name = "tweet_reactions",
         uniqueConstraints = {
@@ -20,60 +23,28 @@ import jakarta.persistence.*;
 
 public class TweetReaction {
 
+    @Setter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @Column(name = "reaction_id")
     Long reactionId;
 
-    public Long getReactionId() {
-        return reactionId;
-    }
-
-    public void setReactionId(Long reactionId) {
-        this.reactionId = reactionId;
-    }
-
+    @Setter
     @Column(name = "user_id")
     Long userId;
 
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
+    @Setter
     @Column(name = "tweet_id")
     Long tweetId;
-
-    public Long getTweetId() {
-        return tweetId;
-    }
-
-    public void setTweetId(Long tweetId) {
-        this.tweetId = tweetId;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
 
     @ManyToOne
     @MapsId("userId")
     @JoinColumn(name = "user_id")
     User user;
-
-    public User getUser() {
-        return user;
-    }
 
     public void setUser(User user) {
         this.userId = user.getId();
@@ -85,10 +56,6 @@ public class TweetReaction {
     @JoinColumn(name = "tweet_id")
     Tweet tweet;
 
-    public Tweet getTweet() {
-        return tweet;
-    }
-
     public void setTweet(Tweet tweet) {
         this.tweetId = tweet.getId();
         this.tweet = tweet;
@@ -98,10 +65,6 @@ public class TweetReaction {
     @MapsId("reactionId")
     @JoinColumn(name = "reaction_id")
     Reaction reaction;
-
-    public Reaction getReaction() {
-        return reaction;
-    }
 
     public void setReaction(Reaction reaction) {
         this.reactionId = reaction.getId();
