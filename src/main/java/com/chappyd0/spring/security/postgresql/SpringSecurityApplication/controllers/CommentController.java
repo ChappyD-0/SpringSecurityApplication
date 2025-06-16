@@ -3,6 +3,7 @@ package com.chappyd0.spring.security.postgresql.SpringSecurityApplication.contro
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.models.Comment;
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.models.Tweet;
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.models.User;
+import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.payload.dto.CommentResponseDTO;
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.payload.request.CreateCommentRequest;
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.repository.CommentRepository;
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.repository.TweetRepository;
@@ -27,14 +28,13 @@ public class CommentController {
     @Autowired
     private UserRepository userRepository;
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<?> createComment(@RequestBody CreateCommentRequest request) {
         Optional<Tweet> tweet = tweetRepository.findById(request.getTweetId());
         if (tweet.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid tweet ID");
         }
 
-        // Obtener usuario autenticado del JWT
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         Optional<User> user = userRepository.findByUsername(username);
@@ -47,7 +47,9 @@ public class CommentController {
         comment.setTweet(tweet.get());
         comment.setUser(user.get());
         commentRepository.save(comment);
-        return ResponseEntity.ok(comment);
+
+        // Return DTO instead of entity
+        return ResponseEntity.ok(new CommentResponseDTO(comment));
     }
 }
 
