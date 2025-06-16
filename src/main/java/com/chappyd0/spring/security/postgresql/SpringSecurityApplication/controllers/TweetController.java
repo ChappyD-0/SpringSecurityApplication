@@ -10,6 +10,8 @@ import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.models.
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.models.User;
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.repository.TweetRepository;
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.repository.UserRepository;
+import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.repository.CommentRepository;
+import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.repository.TweetReactionRepository;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.payload.response.TweetResponse;
+import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.payload.dto.TweetDetailsDTO;
+import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.models.Comment;
+import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.models.TweetReaction;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.http.ResponseEntity;
+import java.util.List;
+import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.payload.dto.CommentDTO;
+import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.payload.dto.TweetReactionDTO;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -40,6 +50,11 @@ public class TweetController {
 
     @Autowired
     private TweetRepository tweetRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
+    @Autowired
+    private TweetReactionRepository tweetReactionRepository;
 
     @GetMapping("/all")
     public Page<TweetResponse> getTweet(Pageable pageable) {
@@ -93,6 +108,26 @@ public class TweetController {
         return userOpt.get();
     }
 
-
+    @GetMapping("/details/{id}")
+    public ResponseEntity<TweetDetailsDTO> getTweetDetails(@PathVariable("id") Long id) {
+        Tweet tweet = tweetRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tweet not found"));
+        List<CommentDTO> comments = commentRepository.findByTweetId(id)
+                .stream()
+                .map(c -> new CommentDTO(c.getIdComment(), c.getContent(), c.getUser().getUsername()))
+                .toList();
+        List<TweetReactionDTO> reactions = tweetReactionRepository.findAll()
+                .stream()
+                .filter(r -> r.getTweetId().equals(id))
+                .map(r -> new TweetReactionDTO(r.getId(), r.getReactionId(), r.getUser() != null ? r.getUser().getUsername() : null))
+                .toList();
+        TweetDetailsDTO dto = new TweetDetailsDTO(
+                tweet.getId(),
+                tweet.getTweet(),
+                comments,
+                reactions
+        );
+        return ResponseEntity.ok(dto);
+    }
 
 }

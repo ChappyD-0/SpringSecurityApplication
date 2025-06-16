@@ -56,47 +56,28 @@ public class TweetReactionController {
     }
 
     @PostMapping("/create")
-    public TweetReaction createReaction(@Valid @RequestBody TweetReactionRequest tweetReaction) {
-        System.out.println("tweetid : " + tweetReaction.getTweetId()  );
-        System.out.println("reactiontid : " + tweetReaction.getReactionId()  );
-
+    public TweetReaction createOrUpdateReaction(@Valid @RequestBody TweetReactionRequest tweetReaction) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
-        System.out.println("userid : " + userId  );
-
-
         User user = getValidUser(userId);
-        System.out.println("user");
+        Tweet tweet = getValidTweet(tweetReaction.getTweetId());
+        Reaction reaction = getValidReaction(tweetReaction.getReactionId());
 
-        System.out.println(user);
-
-        TweetReaction myTweetReaction = new TweetReaction();
-        Tweet myTweet = getValidTweet(tweetReaction.getTweetId());
-        System.out.println("object tweet : " );
-        System.out.println(myTweet );
-
-
-        Reaction myReaction = getValidReaction(tweetReaction.getReactionId());
-        System.out.println("object reaction : "   );
-        System.out.println( myReaction );
-
-        //myTweetReaction.setUserId(user.getId());
-        //myTweetReaction.setTweetId(myTweet.getId());
-        //myTweetReaction.setReactionId(myReaction.getId());
-
-        myTweetReaction.setUser(user);
-        myTweetReaction.setTweet(myTweet);
-        myTweetReaction.setReaction(myReaction);
-
-        System.out.println("tweet reaction : "   );
-        System.out.println( myTweetReaction.getReactionId());
-        System.out.println( myTweetReaction.getTweetId());
-
-        System.out.println( myTweetReaction.getUserId());
-
-
+        // Buscar si ya existe una reacción de este usuario para este tweet
+        Optional<TweetReaction> existing = tweetReactionRepository.findByUserIdAndTweetId(user.getId(), tweet.getId());
+        TweetReaction myTweetReaction;
+        if (existing.isPresent()) {
+            // Si existe, actualizar la reacción
+            myTweetReaction = existing.get();
+            myTweetReaction.setReaction(reaction);
+        } else {
+            // Si no existe, crear una nueva
+            myTweetReaction = new TweetReaction();
+            myTweetReaction.setUser(user);
+            myTweetReaction.setTweet(tweet);
+            myTweetReaction.setReaction(reaction);
+        }
         tweetReactionRepository.save(myTweetReaction);
-
         return myTweetReaction;
     }
 
