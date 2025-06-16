@@ -13,6 +13,7 @@ import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.models.
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.models.Tweet;
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.models.TweetReaction;
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.models.User;
+import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.payload.dto.TweetReactionResponseDTO;
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.payload.request.TweetReactionRequest;
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.repository.ReactionRepository;
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.repository.TweetReactionRepository;
@@ -56,29 +57,32 @@ public class TweetReactionController {
     }
 
     @PostMapping("/create")
-    public TweetReaction createOrUpdateReaction(@Valid @RequestBody TweetReactionRequest tweetReaction) {
+    public TweetReactionResponseDTO createOrUpdateReaction(@Valid @RequestBody TweetReactionRequest tweetReaction) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
         User user = getValidUser(userId);
         Tweet tweet = getValidTweet(tweetReaction.getTweetId());
         Reaction reaction = getValidReaction(tweetReaction.getReactionId());
 
-        // Buscar si ya existe una reacción de este usuario para este tweet
         Optional<TweetReaction> existing = tweetReactionRepository.findByUserIdAndTweetId(user.getId(), tweet.getId());
         TweetReaction myTweetReaction;
         if (existing.isPresent()) {
-            // Si existe, actualizar la reacción
             myTweetReaction = existing.get();
             myTweetReaction.setReaction(reaction);
         } else {
-            // Si no existe, crear una nueva
             myTweetReaction = new TweetReaction();
             myTweetReaction.setUser(user);
             myTweetReaction.setTweet(tweet);
             myTweetReaction.setReaction(reaction);
         }
         tweetReactionRepository.save(myTweetReaction);
-        return myTweetReaction;
+
+        return new TweetReactionResponseDTO(
+                myTweetReaction.getId(),
+                myTweetReaction.getTweetId(),
+                myTweetReaction.getReactionId(),
+                user.getUsername()
+        );
     }
 
     private User getValidUser(String userId) {
