@@ -25,6 +25,9 @@ public class Tweet {
     @NotBlank
     @Size(max = 140)
     private String tweet;
+
+    private String imageUrl;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "posted_by", referencedColumnName = "id")
     private User postedBy;
@@ -39,5 +42,3 @@ public class Tweet {
 
 
 }
-
-

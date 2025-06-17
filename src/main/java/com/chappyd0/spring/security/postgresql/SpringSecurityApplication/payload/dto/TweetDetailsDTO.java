@@ -10,6 +10,7 @@ import java.util.List;
 public class TweetDetailsDTO {
     private Long tweetId;
     private String tweetContent;
+    private String imageUrl;
     private List<CommentDTO> comments;
     private List<TweetReactionDTO> reactions;
 }

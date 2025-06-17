@@ -9,5 +9,6 @@ public class TweetResponse {
     private Long id;
     private String tweet;
     private String postedByUsername;
+    private String imageUrl; // <-- Nuevo campo
 }
 

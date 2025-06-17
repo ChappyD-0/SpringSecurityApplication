@@ -42,6 +42,16 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.payload.dto.CommentDTO;
 import com.chappyd0.spring.security.postgresql.SpringSecurityApplication.payload.dto.TweetReactionDTO;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.util.StringUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -56,6 +66,44 @@ public class TweetController {
     @Autowired
     private TweetReactionRepository tweetReactionRepository;
 
+    private final Path uploadDir = Paths.get("uploads");
+
+
+    @PostMapping("/upload-image")
+    public ResponseEntity<String> uploadImage(@RequestParam("image") MultipartFile file) {
+        try {
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+            String filename = System.currentTimeMillis() + "_" + StringUtils.cleanPath(file.getOriginalFilename());
+            Path targetLocation = uploadDir.resolve(filename);
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+
+            return ResponseEntity.ok("/api/tweets/image/" + filename);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Could not upload image: " + e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/image/{filename:.+}")
+    public ResponseEntity<Resource> getImage(@PathVariable String filename) {
+        try {
+            Path filePath = uploadDir.resolve(filename).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+            if (resource.exists()) {
+                String contentType = Files.probeContentType(filePath);
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_TYPE, contentType != null ? contentType : "application/octet-stream")
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @GetMapping("/all")
     public Page<TweetResponse> getTweet(Pageable pageable) {
         Page<Tweet> tweets = tweetRepository.findAll(pageable);
@@ -64,7 +112,8 @@ public class TweetController {
                 .map(tweet -> new TweetResponse(
                     tweet.getId(),
                     tweet.getTweet(),
-                    tweet.getPostedBy() != null ? tweet.getPostedBy().getUsername() : null
+                    tweet.getPostedBy() != null ? tweet.getPostedBy().getUsername() : null,
+                    tweet.getImageUrl() // <-- Añade imageUrl en la respuesta
                 ))
                 .collect(Collectors.toList()),
             pageable,
@@ -83,15 +132,10 @@ public class TweetController {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
-        System.out.println("userid : " + userId  );
-
-
         User user = getValidUser(userId);
-        System.out.println("user");
-
-        System.out.println(user);
-        Tweet myTweet = new Tweet(tweet.getTweet(),user);
+        Tweet myTweet = new Tweet(tweet.getTweet(), user);
         myTweet.setPostedBy(user);
+        myTweet.setImageUrl(tweet.getImageUrl());
         tweetRepository.save(myTweet);
 
         return myTweet;
@@ -124,6 +168,7 @@ public class TweetController {
         TweetDetailsDTO dto = new TweetDetailsDTO(
                 tweet.getId(),
                 tweet.getTweet(),
+                tweet.getImageUrl(),
                 comments,
                 reactions
         );
